@@ -292,6 +292,7 @@ void create_external(char chaindir[], char root_name[], char **paramnames,
 {
   char getdistfile[STD_STR];
   char textablefile[STD_STR];
+  int i;
 
   sprintf(getdistfile,"external/getdist_%s.ini",root_name);
   sprintf(textablefile,"external/tex_table_%s.ini",root_name);

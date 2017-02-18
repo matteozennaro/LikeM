@@ -13,5 +13,6 @@ extern int count_number_of_columns(char file[], int number_of_header_lines);
 extern void output_for_getdist(int index, char chaindir[], char root_name[], char **paramnames, char **paramlatex, int Nparams);
 extern void adjust_path(char *str);
 extern void trim(char *str);
+extern void create_external(char chaindir[], char root_name[], char **paramnames, char **paramlatex, int Nparams);
 
 #endif
