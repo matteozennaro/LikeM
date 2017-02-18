@@ -342,7 +342,7 @@ void create_external(char chaindir[], char root_name[], char **paramnames,
       "cool = 1\n",
       chaindir,root_name,
       root_name,
-      chain);
+      chaindir);
     fclose(f);
   }
 
@@ -379,4 +379,6 @@ void create_external(char chaindir[], char root_name[], char **paramnames,
       "split_table =  T #default is F\n"
       "print_bestfits = T #default is F\n",
       root_name);
+    fclose(f);
+  }
 }
