@@ -5,6 +5,17 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
+def find_in_file(filename,searchstr):
+	with open(filename) as f:
+		for line in f:
+			words = line.split(' \t\n=')
+			for i in len(words):
+				if(word[i]==searchstr):
+					try:
+						return word[i+1]
+					except:
+						print 'Could not find a match for '+searchstr
+
 LW = 1.5
 FS = 16
 
