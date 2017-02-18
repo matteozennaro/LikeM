@@ -286,3 +286,96 @@ void trim(char *str)
   tmp = str+i;
   sprintf(str,"%s",tmp);
 }
+
+void create_external(char chaindir[], char root_name[], char **paramnames,
+  char **paramlatex, int Nparams)
+{
+  char getdistfile[STD_STR];
+  char textablefile[STD_STR];
+
+  sprintf(getdistfile,"external/getdist_%s.ini",root_name);
+  sprintf(textablefile,"external/tex_table_%s.ini",root_name);
+
+  FILE *f;
+  f = fopen(getdistfile,"w");
+  if(f==NULL)
+  {
+    printf("Error creating file %s\n",getdistfile);
+    status = IO_FAILURE;
+    return;
+  }
+  else
+  {
+    fprintf(f,
+      "no_tests = F\n"
+      "file_root = %s/%s\n"
+      "out_root = dist_%s\n"
+      "out_dir = %s\n"
+      "plot_data_dir = ./plot_data/\n"
+      "chain_num = -1\n"
+      "first_chain =\n"
+      "exclude_chain =\n"
+      "ignore_rows = 0.3\n"
+      "#include defaults settings for kernel densitiy estimates etc, can also be specified in this file if you want to override\n"
+      "DEFAULT(/home/matteo/CosmoCodes/CosmoMC/python/getdist/analysis_defaults.ini)\n"
+      "samples_are_chains = T\n"
+      "no_plots = T\n"
+      "plot_2D_param = 0\n"
+      "plot_2D_num = 0\n"
+      "plot1 =\n"
+      "plot2 =\n"
+      "num_3D_plots = 0\n"
+      "3D_plot1 =\n"
+      "marker[nrun] = 0\n"
+      "thin_factor = 0\n"
+      "make_single_samples = F\n"
+      "single_thin = 4\n"
+      "limits[r02]= 0 N\n"
+      "limits[r10]= 0 N\n"
+      "all_limits =\n"
+      "force_twotail = F\n"
+      "PCA_num = 0\n"
+      "PCA_normparam =\n"
+      "PCA_params =\n"
+      "PCA_func   = LLL\n"
+      "cool = 1\n",
+      chaindir,root_name,
+      root_name,
+      chain);
+    fclose(f);
+  }
+
+  f = fopen(textablefile,"w");
+  if(f==NULL)
+  {
+    printf("Error creating file %s\n",textablefile);
+    status = IO_FAILURE;
+    return;
+  }
+  else
+  {
+    fprintf(f,
+      "Ncosmo = 1\n"
+      "cosmo_dir = %s\n"
+      "cosmo_names = dist_%s\n"
+      "cosmo_tex = %s\n"
+      "Nparams = %i\n",
+      chaindir,
+      root_name,
+      root_name,
+      Nparams);
+    fprintf(f,
+      "param_names = ");
+    for(i=0;i<Nparams;i++) fprintf(f,"%s ",paramnames[i]); fprintf(f,"\n");
+    fprintf(f,
+      "param_tex = ");
+    for(i=0;i<Nparams;i++) fprintf(f,"%s ",paramlatex[i]); fprintf(f,"\n");
+    fprintf(f,
+      "out_file = table_%s.tex\n"
+      "# Optional parameters:\n"
+      "overwrite = T #default is F\n"
+      "create_tex_doc = T  #default is F\n"
+      "split_table =  T #default is F\n"
+      "print_bestfits = T #default is F\n",
+      root_name);
+}

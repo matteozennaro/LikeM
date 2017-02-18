@@ -2,6 +2,7 @@ from getdist import plots, loadMCSamples
 import getdist
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 import os
 
 LW = 1.5
@@ -26,13 +27,19 @@ plt.rc('font', **font)
 
 plt.rc('text', usetex=True)
 
+if(len(sys.argv)!=2):
+	print 'Error! Please, use the same paramfile as for LikeM'
+parfile=sys.argv[i]
 
-root1 = 'chains/DEMNUNi_LCDM'
-labs=['Tinker $\Lambda$CDM DEMNUni']
+chainin = find_in_file(parfile,'chain_dir')
+rootin = find_in_file(parfile,'root_name')
+
+root1 = chainin+'/'+rootin
+labs=[rootin]
 col1='#0000ff'
 
 chain='plots/'
-outfile = 'DEMNUNi_LCDM'
+outfile = rootin
 
 if os.path.isfile(root1+'.py_mcsamples') == True:
     os.system('rm '+root1+'.py_mcsamples')
@@ -52,7 +59,7 @@ triplot.triangle_plot(
 						contour_lws=[1.5]
 						)
 triplot.export(chain+outfile+'_triangle.pdf')
-os.system('okular '+chain+outfile+'_triangle.pdf &')
+# os.system('okular '+chain+outfile+'_triangle.pdf &')
 
 marg = plots.getSubplotPlotter(width_inch=8)
 marg.settings.figure_legend_frame=False
@@ -69,14 +76,14 @@ marg.plots_1d(
 				lws=[1.5]
 				)
 marg.export(chain+outfile+'_marginalized.pdf')
-os.system('okular '+chain+outfile+'_marginalized.pdf &')
+# os.system('okular '+chain+outfile+'_marginalized.pdf &')
 
-os.system('python /home/matteo/CosmoCodes/CosmoMC/python/GetDist.py getdist_hmf.ini')
-os.system('create_tex_table tex_table.ini')
+os.system('python /workplace/wp1d/cosmomc_2015/python/GetDist.py getdist_'+rootin+'.ini')
+os.system('create_tex_table tex_table_'+rootin+'.ini')
 os.system('pdflatex table_'+outfile+'.tex')
 os.system('mv table_'+outfile+'.pdf tmp.pdf')
 os.system('rm table_'+outfile+'.*')
 os.system('mv tmp.pdf table_'+outfile+'.pdf')
 os.system('pdfcrop table_'+outfile+'.pdf')
 os.system('mv table_'+outfile+'-crop.pdf table_'+outfile+'.pdf')
-os.system('okular table_'+outfile+'.pdf &')
+# os.system('okular table_'+outfile+'.pdf &')

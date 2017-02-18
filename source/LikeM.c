@@ -402,6 +402,9 @@ int main (int argc, char * argv[])
 	output_for_getdist(rank+1,chaindir,root_name,paramnames,paramlatex,Nparams);
 	if(!check_status(status)) mpi_exit(status);
 
+	if(rank==0) create_external(chaindir,root_name,paramnames,paramlatex,Nparams);
+	if(!check_status(status)) mpi_exit(status);
+
 	/****************************************************************************/
 	// PREPARING TO QUIT
 	gsl_matrix_free(current_covariance);
