@@ -22,6 +22,7 @@
 #include <TinkerHMF.h>
 #include <Cole05bias.h>
 #include <Cole05pk.h>
+#include <NonLocalBias_RS_like.h>
 
 int main (int argc, char * argv[])
 {
@@ -136,6 +137,9 @@ int main (int argc, char * argv[])
 	if(!read_bool_from_file(argv[1],"use_cole05pk",&use_cole05pk)) use_cole05pk='F';
 	else if(use_cole05pk=='T') LikeNum++;
 
+	if(!read_bool_from_file(argv[1],"use_nonlocbiasrspk",&use_nonlocbiasrspk)) use_nonlocbiasrspk='F';
+	else if(use_nonlocbiasrspk=='T') LikeNum++;
+
 	if(LikeNum == 0)
 	{
 		char error[LONG_STR];
@@ -230,6 +234,15 @@ int main (int argc, char * argv[])
 		MPI_Barrier(MPI_COMM_WORLD);
 	}
 
+	struct DataNonLocPk datanonlocpk,datagalnonlocpk;
+	struct LinNonLocPk linnonlocpk;
+	if (use_cole05pk=='T')
+	{
+		InitialiseNonLocRSPk(argv[1],&datagalnonlocpk,&datanonlocpk,&linnonlocpk);
+		if(!check_status(status)) mpi_exit(status);
+		MPI_Barrier(MPI_COMM_WORLD);
+	}
+
   /****************************************************************************/
 	// METROPOLIS - HASTINGS
 	start = time(NULL);
@@ -251,6 +264,9 @@ int main (int argc, char * argv[])
 	if(!check_status(status)) mpi_exit(status);
 
 	if(use_cole05pk=='T') chi2_0 += chi2_Cole05Pk(theta_0,Nparams,&datapk,&linpk);
+	if(!check_status(status)) mpi_exit(status);
+
+	if(use_nonlocbiasrspk=='T') chi2_0 += chi2_NonLocRSPk(theta_0,Nparams,&datagalnonlocpk,&datanonlocpk,&linnonlocpk);
 	if(!check_status(status)) mpi_exit(status);
 
 	if (append == 'T') // NEED TO UPDATE THIS
@@ -325,6 +341,9 @@ int main (int argc, char * argv[])
 		if(!check_status(status)) mpi_exit(status);
 
 		if(use_cole05pk=='T') chi2_1 += chi2_Cole05Pk(theta_1,Nparams,&datapk,&linpk);
+		if(!check_status(status)) mpi_exit(status);
+
+		if(use_nonlocbiasrspk=='T') chi2_1 += chi2_NonLocRSPk(theta_1,Nparams,&datagalnonlocpk,&datanonlocpk,&linnonlocpk);
 		if(!check_status(status)) mpi_exit(status);
 
 		acceptance = chi2_1 - chi2_0;
