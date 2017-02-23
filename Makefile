@@ -21,7 +21,7 @@ MODULEFILES+=$(MODULEDIR)/file_manipulation.o $(MODULEDIR)/linalg.o
 MODULEFILES+=$(MODULEDIR)/read_ini_file.o $(MODULEDIR)/numerics.o
 MODULEFILES+=$(MODULEDIR)/statistics.o $(MODULEDIR)/mcmc_functions.o
 
-LIKEFILES=$(LIKEDIR)/TinkerHMF.o $(LIKEDIR)/Cole05bias.o
+LIKEFILES=$(LIKEDIR)/TinkerHMF.o $(LIKEDIR)/Cole05bias.o $(LIKEDIR)/Cole05pk.o
 
 all: modules likes cosmo mcmc
 

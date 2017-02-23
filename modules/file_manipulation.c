@@ -318,7 +318,7 @@ void create_external(char chaindir[], char root_name[], char **paramnames,
       "exclude_chain =\n"
       "ignore_rows = 0.3\n"
       "#include defaults settings for kernel densitiy estimates etc, can also be specified in this file if you want to override\n"
-      "DEFAULT(/home/matteo/CosmoCodes/CosmoMC/python/getdist/analysis_defaults.ini)\n"
+      "DEFAULT(/workplace/wp1d/cosmomc_2015/python/getdist/analysis_defaults.ini)\n"
       "samples_are_chains = T\n"
       "no_plots = T\n"
       "plot_2D_param = 0\n"
@@ -355,6 +355,9 @@ void create_external(char chaindir[], char root_name[], char **paramnames,
   }
   else
   {
+    char split = 'F';
+    if((Nparams%2)==0) split='T';
+
     fprintf(f,
       "Ncosmo = 1\n"
       "cosmo_dir = %s\n"
@@ -366,19 +369,19 @@ void create_external(char chaindir[], char root_name[], char **paramnames,
       root_name,
       Nparams);
     fprintf(f,
-      "param_names = ");
-    for(i=0;i<Nparams;i++) fprintf(f,"%s ",paramnames[i]); fprintf(f,"\n");
+      "param_names = %s",paramnames[0]);
+    for(i=1;i<Nparams;i++) fprintf(f,", %s",paramnames[i]); fprintf(f,"\n");
     fprintf(f,
-      "param_tex = ");
-    for(i=0;i<Nparams;i++) fprintf(f,"%s ",paramlatex[i]); fprintf(f,"\n");
+      "param_tex = %s",paramlatex[0]);
+    for(i=1;i<Nparams;i++) fprintf(f,", %s",paramlatex[i]); fprintf(f,"\n");
     fprintf(f,
       "out_file = table_%s.tex\n"
       "# Optional parameters:\n"
       "overwrite = T #default is F\n"
       "create_tex_doc = T  #default is F\n"
-      "split_table =  T #default is F\n"
+      "split_table =  %c #default is F\n"
       "print_bestfits = T #default is F\n",
-      root_name);
+      root_name,split);
     fclose(f);
   }
 }

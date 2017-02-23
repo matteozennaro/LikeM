@@ -6,15 +6,21 @@ import sys
 import os
 
 def find_in_file(filename,searchstr):
-	with open(filename) as f:
+	doprint=False
+	doprint2=False
+	with open(filename,'r') as f:
 		for line in f:
-			words = line.split(' \t\n=')
-			for i in len(words):
-				if(word[i]==searchstr):
-					try:
-						return word[i+1]
-					except:
-						print 'Could not find a match for '+searchstr
+			words=line.split()
+			for word in words:
+				word = word.strip(' \t\n')
+				if doprint2:
+					print word
+					return word
+				elif doprint:
+					doprint2=True
+				else:
+					if(searchstr==word):
+						doprint=True
 
 LW = 1.5
 FS = 16
@@ -40,12 +46,12 @@ plt.rc('text', usetex=True)
 
 if(len(sys.argv)!=2):
 	print 'Error! Please, use the same paramfile as for LikeM'
-parfile=sys.argv[i]
+parfile=sys.argv[1]
 
 chainin = find_in_file(parfile,'chain_dir')
 rootin = find_in_file(parfile,'root_name')
 
-root1 = chainin+'/'+rootin
+root1 = '%s/%s'%(chainin,rootin)
 labs=[rootin]
 col1='#0000ff'
 
@@ -89,8 +95,8 @@ marg.plots_1d(
 marg.export(chain+outfile+'_marginalized.pdf')
 # os.system('okular '+chain+outfile+'_marginalized.pdf &')
 
-os.system('python /workplace/wp1d/cosmomc_2015/python/GetDist.py getdist_'+rootin+'.ini')
-os.system('create_tex_table tex_table_'+rootin+'.ini')
+os.system('python /workplace/wp1d/cosmomc_2015/python/GetDist.py external/getdist_'+rootin+'.ini')
+os.system('create_tex_table external/tex_table_'+rootin+'.ini')
 os.system('pdflatex table_'+outfile+'.tex')
 os.system('mv table_'+outfile+'.pdf tmp.pdf')
 os.system('rm table_'+outfile+'.*')

@@ -21,6 +21,7 @@
 
 #include <TinkerHMF.h>
 #include <Cole05bias.h>
+#include <Cole05pk.h>
 
 int main (int argc, char * argv[])
 {
@@ -132,6 +133,9 @@ int main (int argc, char * argv[])
 	if(!read_bool_from_file(argv[1],"use_cole05",&use_cole05)) use_cole05='F';
 	else if(use_cole05=='T') LikeNum++;
 
+	if(!read_bool_from_file(argv[1],"use_cole05pk",&use_cole05pk)) use_cole05pk='F';
+	else if(use_cole05pk=='T') LikeNum++;
+
 	if(LikeNum == 0)
 	{
 		char error[LONG_STR];
@@ -174,7 +178,6 @@ int main (int argc, char * argv[])
   // CHECKS
 	#ifdef DEBUG
 		Nstep = 3;
-		int i;
 		for (i=0; i<Nparams; i++)
 		{
 			printf("%.10e	%.10e\n",param[i],par_step[i]);
@@ -219,6 +222,14 @@ int main (int argc, char * argv[])
 		MPI_Barrier(MPI_COMM_WORLD);
 	}
 
+	struct DataPk datapk, linpk;
+	if (use_cole05pk=='T')
+	{
+		InitialiseCole05DataPk(argv[1],&datapk,&linpk);
+		if(!check_status(status)) mpi_exit(status);
+		MPI_Barrier(MPI_COMM_WORLD);
+	}
+
   /****************************************************************************/
 	// METROPOLIS - HASTINGS
 	start = time(NULL);
@@ -237,6 +248,9 @@ int main (int argc, char * argv[])
 	if(!check_status(status)) mpi_exit(status);
 
 	if(use_cole05=='T') chi2_0 += chi2_Cole05(theta_0,Nparams,&data);
+	if(!check_status(status)) mpi_exit(status);
+
+	if(use_cole05pk=='T') chi2_0 += chi2_Cole05Pk(theta_0,Nparams,&datapk,&linpk);
 	if(!check_status(status)) mpi_exit(status);
 
 	if (append == 'T') // NEED TO UPDATE THIS
@@ -308,6 +322,9 @@ int main (int argc, char * argv[])
 		if(!check_status(status)) mpi_exit(status);
 
 		if(use_cole05=='T') chi2_1 += chi2_Cole05(theta_1,Nparams,&data);
+		if(!check_status(status)) mpi_exit(status);
+
+		if(use_cole05pk=='T') chi2_1 += chi2_Cole05Pk(theta_1,Nparams,&datapk,&linpk);
 		if(!check_status(status)) mpi_exit(status);
 
 		acceptance = chi2_1 - chi2_0;

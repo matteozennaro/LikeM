@@ -11,6 +11,7 @@ extern char workdir[500];
 
 extern char use_tinker;
 extern char use_cole05;
+extern char use_cole05pk;
 
 #define STD_STR 500
 #define LONG_STR 2000
