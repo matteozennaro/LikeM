@@ -236,7 +236,7 @@ int main (int argc, char * argv[])
 
 	struct DataNonLocPk datanonlocpk,datagalnonlocpk;
 	struct LinNonLocPk linnonlocpk;
-	if (use_cole05pk=='T')
+	if (use_nonlocbiasrspk=='T')
 	{
 		InitialiseNonLocRSPk(argv[1],&datagalnonlocpk,&datanonlocpk,&linnonlocpk);
 		if(!check_status(status)) mpi_exit(status);
