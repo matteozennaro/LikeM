@@ -87,15 +87,15 @@ void QuitCole05Pk(struct DataPk * data, struct DataPk * lin)
 double chi2_Cole05Pk(double *params, int Nparams, struct DataPk * data, struct DataPk * lin)
 {
   // Make parameters readable
-  // double b0,A,Q;
-  // b0 = params[0];
-  // A = params[1];
-  // Q = params[2];
-
   double b0,A,Q;
-  b0 = 1.0;
-  A = params[0];
-  Q = params[1];
+  b0 = params[0];
+  A = params[1];
+  Q = params[2];
+
+  // double b0,A,Q;
+  // b0 = 1.0;
+  // A = params[0];
+  // Q = params[1];
 
   double Mod[data->Nk];
   double deviation[data->Nk];

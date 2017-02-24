@@ -106,6 +106,8 @@ void InitialiseNonLocRSPk(char parfile[], struct DataNonLocPk *gal, struct DataN
   gsl_spline_init(lin->splinePk,lin->k,lin->pk,lin->Nk);
   lin->kmin = min_double_vec(lin->Nk,lin->k);
   lin->kmax = max_double_vec(lin->Nk,lin->k);
+  if(rank==0) printf("Linear Pk, min k = %e\n",lin->kmin);
+  if(rank==0) printf("Linear Pk, max k = %e\n",lin->kmax);
 }
 
 void QuitNonLocRSPk(struct DataNonLocPk *data, struct LinNonLocPk *lin)
@@ -125,8 +127,10 @@ void QuitNonLocRSPk(struct DataNonLocPk *data, struct LinNonLocPk *lin)
 double P_at_k(double k, struct LinNonLocPk *p)
 {
   double Pk = 0;
-  if (k>p->kmin && k<p->kmax)
+  if ((k>p->kmin) && (k<p->kmax))
+  {
     Pk = gsl_spline_eval(p->splinePk,k,p->acc);
+  }
   else if(k<=p->kmin)
   {
     Pk = exp((log(p->pk[1]/p->pk[0])/log(p->k[1]/p->k[0]))*log(k/p->k[0]) + log(p->pk[0]));
@@ -152,7 +156,8 @@ double P_at_k(double k, struct LinNonLocPk *p)
 // generic power law interpolation of a power spectrum
 double PSPL(double k, double *ko, double *pko, int N)
 {
-  double Pk = 0;
+  double Pk1 = 0;
+  double Pk2 = 0;
   double kmin = ko[0];
   double kmax = ko[N-1];
 
@@ -160,28 +165,36 @@ double PSPL(double k, double *ko, double *pko, int N)
   {
     int i=0;
     while(ko[i] < k) i++;
-    Pk = exp((log(pko[i]/pko[i-1])/log(ko[i]/ko[i-1]))*log(k/ko[i-1]) + log(pko[i-1]));
+    Pk1 = exp((log(pko[i]/pko[i-1])/log(ko[i]/ko[i-1]))*log(k/ko[i-1]) + log(pko[i-1]));
+    Pk2 = ((pko[i]-pko[i-1])/(ko[i]-ko[i-1]))*(k-ko[i-1]) + pko[i-1];
   }
   else if(k<=kmin)
   {
-    Pk = exp((log(pko[1]/pko[0])/log(ko[1]/ko[0]))*log(k/ko[0]) + log(pko[0]));
+    Pk1 = exp((log(pko[1]/pko[0])/log(ko[1]/ko[0]))*log(k/ko[0]) + log(pko[0]));
+    Pk2 = ((pko[1]-pko[0])/(ko[1]-ko[0]))*(k-ko[0]) + pko[0];
   }
   else if(k>=kmax)
   {
-    Pk = exp((log(pko[N-1]/pko[N-2])/log(ko[N-1]/ko[N-2]))*log(k/ko[N-2]) + log(pko[N-2]));
+    Pk1 = exp((log(pko[N-1]/pko[N-2])/log(ko[N-1]/ko[N-2]))*log(k/ko[N-2]) + log(pko[N-2]));
+    Pk2 = ((pko[N-1]-pko[N-2])/(ko[N-1]-ko[N-2]))*(k-ko[N-2]) + pko[N-2];
   }
   else
   {
     printf("Unexpected error in generic interpolation!\n");
     status = NUM_FAILURE;
   }
-  if(isnan(Pk))
+
+  if(isnan(Pk1))
   {
-    printf("Pk is NaN in P_at_k!!! When this happened\nk = %e\nkmin = %e\nkmax = %e\n",
-    k,kmin,kmax);
-    status = NUM_FAILURE;
+    if(!isnan(Pk2)) return Pk2;
+    else
+    {
+      printf("Pk is NaN in PSPL!!! When this happened\nk = %e\nkmin = %e\nkmax = %e\n",
+      k,kmin,kmax);
+      status = NUM_FAILURE;
+    }
   }
-  return Pk;
+  return Pk1;
 }
 
 /******************************************************************************/
@@ -575,6 +588,7 @@ double chi2_NonLocRSPk(double *params, int Nparams, struct DataNonLocPk * gal, s
 
   for(i=0;i<Nktab;i++)
   {
+    ktab[i] = exp(log(1e-4) + i*log(2.0/1e-4)/(double)(Nktab-1));
     Pb2delta[i] = compute_cquad(ktab[i],&Pb2delta_r_integrand,lin);
     Pbs2delta[i] = compute_cquad(ktab[i],&Pbs2delta_r_integrand,lin);
     Pb2s2delta[i] = compute_cquad(ktab[i],&Pb2s2delta_r_integrand,lin);
@@ -598,13 +612,13 @@ double chi2_NonLocRSPk(double *params, int Nparams, struct DataNonLocPk * gal, s
       + b2*b2*PSPL(data->k[i],ktab,Pb22delta,Nktab)
       + 2.0*b2*bs2*PSPL(data->k[i],ktab,Pb2s2delta,Nktab)
       + bs2*bs2*PSPL(data->k[i],ktab,Pbs22delta,Nktab)
-      + 2.0*b1*b3nl*PSPL(data->k[i],ktab,Sigma_2_3,Nktab)*P_at_k(data->k[i],lin);
+      + 2.0*b1*b3nl*PSPL(data->k[i],ktab,Sigma_2_3,Nktab)*PSPL(data->k[i],lin->k,lin->pk,lin->Nk);
 
     diff = (gal->pk[i]-Mod) / gal->err[i];
     chi2 += diff*diff;
   }
 
-  if(!check_for_nan_and_inf(chi2,"Cole05pk chi2")) return -1;
+  if(!check_for_nan_and_inf(chi2,"NonLocalBias RS chi2")) return -1;
 
   #ifdef DEBUG
   printf("chi2 = %e\n",chi2);
